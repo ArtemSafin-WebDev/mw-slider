@@ -1205,8 +1205,8 @@ select:-webkit-autofill:focus {
           user-select: none;
   -webkit-user-drag: none;
   -webkit-app-region: no-drag;
-  -ms-touch-action: pan-y pinch-zoom;
-      touch-action: pan-y pinch-zoom; }
+  -ms-touch-action: pan-x pinch-zoom;
+      touch-action: pan-x pinch-zoom; }
   .slider__card:nth-child(1) {
     background-color: #4c3be7; }
   .slider__card:nth-child(2n) {

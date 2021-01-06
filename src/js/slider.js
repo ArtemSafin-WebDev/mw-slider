@@ -313,10 +313,11 @@ class CardSlider {
     };
 
     bindListeners = () => {
-        this.cardsWrapper.addEventListener('mousedown', this.handleDragStart);
-        this.cardsWrapper.addEventListener('mousemove', this.handleDragMove);
-        this.cardsWrapper.addEventListener('mouseup', this.handleDragEnd);
-        this.cardsWrapper.addEventListener('mouseleave', this.handleDragEnd);
+        this.cardsWrapper.addEventListener('pointerdown', this.handleDragStart);
+        this.cardsWrapper.addEventListener('pointermove', this.handleDragMove);
+        this.cardsWrapper.addEventListener('pointerup', this.handleDragEnd);
+        this.cardsWrapper.addEventListener('pointerleave', this.handleDragEnd);
+        this.cardsWrapper.addEventListener('pointercancel', this.handleDragEnd);
     };
 }
 
