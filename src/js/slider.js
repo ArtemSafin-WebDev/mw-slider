@@ -2,6 +2,7 @@ import gsap from 'gsap';
 
 class CardSlider {
     constructor(element) {
+        this.rootElement = element;
         this.cardsWrapper = element.querySelector('.slider__cards');
         this.cards = Array.from(element.querySelectorAll('.slider__card'));
         this.cardsPositions = this.cards.map(card => ({
@@ -17,6 +18,7 @@ class CardSlider {
         this.pointerDown = false;
         this.activeIndex = 0;
         this.locked = false;
+        this.clonedSlides = [];
 
         if (!this.cards.length) {
             console.warn('No cards present');
@@ -51,6 +53,40 @@ class CardSlider {
             startValue: this.startX
         });
     };
+
+
+    cloneSlides = () => {
+        const clonedCards = this.cards.map(card => card.cloneNode(true));
+        this.cardsWrapper.append(...clonedCards);
+        this.resetSlider();
+
+       
+    }
+
+    resetSlider = () => {
+        const currentIndex = this.activeIndex;
+        this.cards = Array.from(this.rootElement.querySelectorAll('.slider__card'));
+        this.cards.forEach(card => {
+            gsap.killTweensOf(card);
+            gsap.set(card, {
+                clearProps:"all"
+            })
+        })
+        this.cardsPositions = this.cards.map(card => ({
+            card,
+            position: 0,
+            opacity: 1,
+            scale: 1
+        }));
+
+        this.cardWidth = this.cards[0].offsetWidth;
+        this.threshold = this.cardWidth * 0.3;
+        this.margin = parseInt(window.getComputedStyle(this.cards[0]).marginRight, 10);
+
+        this.activeIndex = 0;
+
+        this.setActiveSlide(currentIndex, true)
+    }
 
     translateSlides = () => {
         this.cardsPositions.forEach((item, itemIndex) => {
@@ -104,7 +140,7 @@ class CardSlider {
         });
     }
 
-    setActiveSlide = index => {
+    setActiveSlide = (index, force = false) => {
         if (index === this.activeIndex) {
             console.warn('Setting the same index');
             return;
@@ -116,7 +152,9 @@ class CardSlider {
         }
 
         this.locked = true;
-        gsap.delayedCall(0.4, () => {
+
+        const DURATION = force ? 0 : 0.4;
+        gsap.delayedCall(DURATION, () => {
             this.locked = false;
         });
 
@@ -127,7 +165,7 @@ class CardSlider {
                         item.opacity = 0;
                         item.scale = 0;
                         gsap.to(item.card, {
-                            duration: 0.4,
+                            duration: DURATION,
                             autoAlpha: 0,
                             scale: 0,
                             x: item.position
@@ -139,7 +177,7 @@ class CardSlider {
                         item.opacity = 0;
                         item.scale = 0;
                         gsap.to(item.card, {
-                            duration: 0.4,
+                            duration: DURATION,
                             autoAlpha: 0,
                             scale: 0,
                             x: newPos
@@ -151,7 +189,7 @@ class CardSlider {
                     item.opacity = 1;
                     item.scale = 1;
                     gsap.to(item.card, {
-                        duration: 0.4,
+                        duration: DURATION,
                         autoAlpha: 1,
                         scale: 1,
                         x: newPos
@@ -162,7 +200,7 @@ class CardSlider {
                     item.opacity = 1;
                     item.scale = 1;
                     gsap.to(item.card, {
-                        duration: 0.4,
+                        duration: DURATION,
                         autoAlpha: 1,
                         scale: 1,
                         x: newPos
@@ -175,7 +213,7 @@ class CardSlider {
                     item.opacity = 0;
                     item.scale = 0;
                     gsap.to(item.card, {
-                        duration: 0.4,
+                        duration: DURATION,
                         autoAlpha: 0,
                         scale: 0,
                         x: item.position
@@ -185,7 +223,7 @@ class CardSlider {
                     item.scale = 1;
 
                     gsap.to(item.card, {
-                        duration: 0.4,
+                        duration: DURATION,
                         autoAlpha: 1,
                         scale: 1,
                         x: item.position
@@ -197,7 +235,7 @@ class CardSlider {
                         item.opacity = 1;
                         item.scale = 1;
                         gsap.to(item.card, {
-                            duration: 0.4,
+                            duration: DURATION,
                             autoAlpha: 1,
                             scale: 1,
                             x: newPos
@@ -208,7 +246,7 @@ class CardSlider {
                         item.opacity = 1;
                         item.scale = 1;
                         gsap.to(item.card, {
-                            duration: 0.4,
+                            duration: DURATION,
                             autoAlpha: 1,
                             scale: 1,
                             x: newPos
