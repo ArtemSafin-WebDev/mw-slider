@@ -61,29 +61,54 @@ class CardSlider {
         if (index > this.activeIndex) {
             this.cardsPositions.forEach((item, itemIndex) => {
                 if (itemIndex < index) {
-                    const indexDifference = itemIndex - this.activeIndex;
-                    const newPos = item.position - (indexDifference * this.cardWidth + indexDifference * this.margin);
-                    console.log(`New position for card ${itemIndex}`, {
-                        newPos,
-                        details: {
-                            position: item.position,
-                            indexDifference: itemIndex - this.activeIndex,
-                            itemIndex,
-                            activeIndex: this.activeIndex,
-                            indexDifference
-                        }
-                    });
-                    gsap.to(item.card, {
-                        duration: 0.4,
-                        autoAlpha: 0,
-                        scale: 0,
-                        x: newPos,
-                        onComplete: () => {
-                            item.position = newPos;
-                            item.opacity = 0;
-                            item.scale = 0;
-                        }
-                    });
+                    if (itemIndex < this.activeIndex) {
+                        const newPos = item.position;
+                        console.log(`New position for card ${itemIndex}`, {
+                            newPos,
+                            details: {
+                                position: item.position,
+                             
+                                itemIndex,
+                                activeIndex: this.activeIndex
+                               
+                            }
+                        });
+                        gsap.to(item.card, {
+                            duration: 0.4,
+                            autoAlpha: 0,
+                            scale: 0,
+                            x: newPos,
+                            onComplete: () => {
+                                item.position = newPos;
+                                item.opacity = 0;
+                                item.scale = 0;
+                            }
+                        });
+                    } else {
+                        const indexDifference = itemIndex - this.activeIndex;
+                        const newPos = item.position - (indexDifference * this.cardWidth + indexDifference * this.margin);
+                        console.log(`New position for card ${itemIndex}`, {
+                            newPos,
+                            details: {
+                                position: item.position,
+                                indexDifference: itemIndex - this.activeIndex,
+                                itemIndex,
+                                activeIndex: this.activeIndex,
+                                indexDifference
+                            }
+                        });
+                        gsap.to(item.card, {
+                            duration: 0.4,
+                            autoAlpha: 0,
+                            scale: 0,
+                            x: newPos,
+                            onComplete: () => {
+                                item.position = newPos;
+                                item.opacity = 0;
+                                item.scale = 0;
+                            }
+                        });
+                    }
                 } else if (itemIndex === index) {
                     const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
                     console.log(`New position for card ${itemIndex}`, newPos);
@@ -114,8 +139,6 @@ class CardSlider {
                     });
                 }
             });
-
-          
         } else {
             this.cardsPositions.forEach((item, itemIndex) => {
                 if (itemIndex < index) {
