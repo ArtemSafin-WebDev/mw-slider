@@ -16,6 +16,7 @@ class CardSlider {
         this.direction = '';
         this.pointerDown = false;
         this.activeIndex = 0;
+        this.locked = false;
 
         if (!this.cards.length) {
             console.warn('No cards present');
@@ -23,7 +24,7 @@ class CardSlider {
         }
 
         this.cardWidth = this.cards[0].offsetWidth;
-        this.threshold = this.cardWidth * 1.1;
+        this.threshold = this.cardWidth * 0.3;
         this.margin = parseInt(window.getComputedStyle(this.cards[0]).marginRight, 10);
         this.thresholdReached = false;
 
@@ -39,6 +40,10 @@ class CardSlider {
 
     handleDragStart = event => {
         event.preventDefault();
+        if (this.locked) {
+            console.log('Slider is locked');
+            return;
+        }
         this.startX = event.pageX;
         this.pointerDown = true;
 
@@ -47,172 +52,7 @@ class CardSlider {
         });
     };
 
-    setActiveSlide = index => {
-        if (index === this.activeIndex) {
-            console.warn('Setting the same index');
-            return;
-        }
-
-        if (!this.cards[index]) {
-            console.error('No card with such index');
-            return;
-        }
-
-        if (index > this.activeIndex) {
-            this.cardsPositions.forEach((item, itemIndex) => {
-                if (itemIndex < index) {
-                    if (itemIndex < this.activeIndex) {
-                        const newPos = item.position;
-                        console.log(`New position for card ${itemIndex}`, {
-                            newPos,
-                            details: {
-                                position: item.position,
-                             
-                                itemIndex,
-                                activeIndex: this.activeIndex
-                               
-                            }
-                        });
-                        gsap.to(item.card, {
-                            duration: 0.4,
-                            autoAlpha: 0,
-                            scale: 0,
-                            x: newPos,
-                            onComplete: () => {
-                                item.position = newPos;
-                                item.opacity = 0;
-                                item.scale = 0;
-                            }
-                        });
-                    } else {
-                        const indexDifference = itemIndex - this.activeIndex;
-                        const newPos = item.position - (indexDifference * this.cardWidth + indexDifference * this.margin);
-                        console.log(`New position for card ${itemIndex}`, {
-                            newPos,
-                            details: {
-                                position: item.position,
-                                indexDifference: itemIndex - this.activeIndex,
-                                itemIndex,
-                                activeIndex: this.activeIndex,
-                                indexDifference
-                            }
-                        });
-                        gsap.to(item.card, {
-                            duration: 0.4,
-                            autoAlpha: 0,
-                            scale: 0,
-                            x: newPos,
-                            onComplete: () => {
-                                item.position = newPos;
-                                item.opacity = 0;
-                                item.scale = 0;
-                            }
-                        });
-                    }
-                } else if (itemIndex === index) {
-                    const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
-                    console.log(`New position for card ${itemIndex}`, newPos);
-                    gsap.to(item.card, {
-                        duration: 0.4,
-                        autoAlpha: 1,
-                        scale: 1,
-                        x: newPos,
-                        onComplete: () => {
-                            item.position = newPos;
-                            item.opacity = 1;
-                            item.scale = 1;
-                        }
-                    });
-                } else {
-                    const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
-                    console.log(`New position for card ${itemIndex}`, newPos);
-                    gsap.to(item.card, {
-                        duration: 0.4,
-                        autoAlpha: 1,
-                        scale: 1,
-                        x: newPos,
-                        onComplete: () => {
-                            item.position = newPos;
-                            item.opacity = 1;
-                            item.scale = 1;
-                        }
-                    });
-                }
-            });
-        } else {
-            this.cardsPositions.forEach((item, itemIndex) => {
-                if (itemIndex < index) {
-                    const newPos = item.position;
-                    console.log(`New position for card ${itemIndex}`, newPos);
-                    gsap.to(item.card, {
-                        duration: 0.4,
-                        autoAlpha: 0,
-                        scale: 0,
-                        x: newPos,
-                        onComplete: () => {
-                            item.position = newPos;
-                            item.opacity = 0;
-                            item.scale = 0;
-                        }
-                    });
-                } else if (itemIndex === index) {
-                    const newPos = item.position;
-                    console.log(`New position for card ${itemIndex}`, newPos);
-                    gsap.to(item.card, {
-                        duration: 0.4,
-                        autoAlpha: 1,
-                        scale: 1,
-                        x: newPos,
-                        onComplete: () => {
-                            item.position = newPos;
-                            item.opacity = 1;
-                            item.scale = 1;
-                        }
-                    });
-                } else {
-                    if (itemIndex > index && itemIndex <= this.activeIndex) {
-                        const newPos = item.position + (itemIndex - index) * this.cardWidth + (itemIndex - index) * this.margin;
-                        console.log(`New position for card ${itemIndex}`, newPos);
-                        gsap.to(item.card, {
-                            duration: 0.4,
-                            autoAlpha: 1,
-                            scale: 1,
-                            x: newPos,
-                            onComplete: () => {
-                                item.position = newPos;
-                                item.opacity = 1;
-                                item.scale = 1;
-                            }
-                        });
-                    } else {
-                        const newPos = item.position + (this.activeIndex - index) * this.cardWidth + (this.activeIndex - index) * this.margin;
-                        console.log(`New position for card ${itemIndex}`, newPos);
-                        gsap.to(item.card, {
-                            duration: 0.4,
-                            autoAlpha: 1,
-                            scale: 1,
-                            x: newPos,
-                            onComplete: () => {
-                                item.position = newPos;
-                                item.opacity = 1;
-                                item.scale = 1;
-                            }
-                        });
-                    }
-                }
-            });
-        }
-
-        this.activeIndex = index;
-    };
-
-    handleDragMove = event => {
-        event.preventDefault();
-        if (!this.pointerDown) return;
-        this.moveX = event.pageX;
-        this.offset = this.moveX - this.startX;
-        this.direction = this.offset > 0 ? 'right' : 'left';
-
+    translateSlides = () => {
         this.cardsPositions.forEach((item, itemIndex) => {
             if (this.direction === 'left') {
                 if (itemIndex < this.activeIndex) {
@@ -222,8 +62,8 @@ class CardSlider {
                 } else if (itemIndex === this.activeIndex) {
                     gsap.set(item.card, {
                         x: item.position,
-                        autoAlpha: gsap.utils.interpolate(1, 0, Math.abs(this.offset / this.threshold)),
-                        scale: gsap.utils.interpolate(1, 0, Math.abs(this.offset / this.threshold))
+                        autoAlpha: gsap.utils.interpolate(1, 0, Math.abs(this.offset / this.cardWidth / 1.2)),
+                        scale: gsap.utils.interpolate(1, 0, Math.abs(this.offset / this.cardWidth / 1.2))
                     });
                 } else {
                     gsap.set(item.card, {
@@ -246,6 +86,149 @@ class CardSlider {
                 }
             }
         });
+    };
+
+
+    translateToOriginalPositions = () => {
+        this.locked = true;
+        gsap.delayedCall(0.4, () => {
+            this.locked = false;
+        });
+        this.cardsPositions.forEach(item => {
+            gsap.to(item.card, {
+                x: item.position,
+                duration: 0.4,
+                scale: item.scale,
+                autoAlpha: item.opacity
+            });
+        });
+    }
+
+    setActiveSlide = index => {
+        if (index === this.activeIndex) {
+            console.warn('Setting the same index');
+            return;
+        }
+
+        if (!this.cards[index]) {
+            console.error('No card with such index');
+            return;
+        }
+
+        this.locked = true;
+        gsap.delayedCall(0.4, () => {
+            this.locked = false;
+        });
+
+        if (index > this.activeIndex) {
+            this.cardsPositions.forEach((item, itemIndex) => {
+                if (itemIndex < index) {
+                    if (itemIndex < this.activeIndex) {
+                        item.opacity = 0;
+                        item.scale = 0;
+                        gsap.to(item.card, {
+                            duration: 0.4,
+                            autoAlpha: 0,
+                            scale: 0,
+                            x: item.position
+                        });
+                    } else {
+                        const newPos =
+                            item.position - ((itemIndex - this.activeIndex) * this.cardWidth + (itemIndex - this.activeIndex) * this.margin);
+                        item.position = newPos;
+                        item.opacity = 0;
+                        item.scale = 0;
+                        gsap.to(item.card, {
+                            duration: 0.4,
+                            autoAlpha: 0,
+                            scale: 0,
+                            x: newPos
+                        });
+                    }
+                } else if (itemIndex === index) {
+                    const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
+                    item.position = newPos;
+                    item.opacity = 1;
+                    item.scale = 1;
+                    gsap.to(item.card, {
+                        duration: 0.4,
+                        autoAlpha: 1,
+                        scale: 1,
+                        x: newPos
+                    });
+                } else {
+                    const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
+                    item.position = newPos;
+                    item.opacity = 1;
+                    item.scale = 1;
+                    gsap.to(item.card, {
+                        duration: 0.4,
+                        autoAlpha: 1,
+                        scale: 1,
+                        x: newPos
+                    });
+                }
+            });
+        } else {
+            this.cardsPositions.forEach((item, itemIndex) => {
+                if (itemIndex < index) {
+                    item.opacity = 0;
+                    item.scale = 0;
+                    gsap.to(item.card, {
+                        duration: 0.4,
+                        autoAlpha: 0,
+                        scale: 0,
+                        x: item.position
+                    });
+                } else if (itemIndex === index) {
+                    item.opacity = 1;
+                    item.scale = 1;
+
+                    gsap.to(item.card, {
+                        duration: 0.4,
+                        autoAlpha: 1,
+                        scale: 1,
+                        x: item.position
+                    });
+                } else {
+                    if (itemIndex > index && itemIndex <= this.activeIndex) {
+                        const newPos = item.position + (itemIndex - index) * this.cardWidth + (itemIndex - index) * this.margin;
+                        item.position = newPos;
+                        item.opacity = 1;
+                        item.scale = 1;
+                        gsap.to(item.card, {
+                            duration: 0.4,
+                            autoAlpha: 1,
+                            scale: 1,
+                            x: newPos
+                        });
+                    } else {
+                        const newPos = item.position + (this.activeIndex - index) * this.cardWidth + (this.activeIndex - index) * this.margin;
+                        item.position = newPos;
+                        item.opacity = 1;
+                        item.scale = 1;
+                        gsap.to(item.card, {
+                            duration: 0.4,
+                            autoAlpha: 1,
+                            scale: 1,
+                            x: newPos
+                        });
+                    }
+                }
+            });
+        }
+
+        this.activeIndex = index;
+    };
+
+    handleDragMove = event => {
+        event.preventDefault();
+        if (!this.pointerDown) return;
+        this.moveX = event.pageX;
+        this.offset = this.moveX - this.startX;
+        this.direction = this.offset > 0 ? 'right' : 'left';
+
+        this.translateSlides();
 
         if (Math.abs(this.offset) >= this.threshold) {
             this.thresholdReached = true;
@@ -266,14 +249,17 @@ class CardSlider {
 
         // Return to the original positions
 
-        this.cardsPositions.forEach(item => {
-            gsap.to(item.card, {
-                x: item.position,
-                duration: 0.4,
-                scale: item.scale,
-                autoAlpha: item.opacity
-            });
-        });
+        if (this.thresholdReached) {
+            if (this.direction === 'left' && this.cards[this.activeIndex + 1]) {
+                this.setActiveSlide(this.activeIndex + 1);
+            } else if (this.direction === 'right' && this.cards[this.activeIndex - 1]) {
+                this.setActiveSlide(this.activeIndex - 1);
+            } else {
+                this.translateToOriginalPositions();
+            }
+        } else {
+            this.translateToOriginalPositions();
+        }
 
         console.log('Drag ended', {
             direction: this.direction,
