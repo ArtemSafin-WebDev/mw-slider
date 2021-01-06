@@ -53,44 +53,129 @@ class CardSlider {
             return;
         }
 
+        if (!this.cards[index]) {
+            console.error('No card with such index');
+            return;
+        }
+
         if (index > this.activeIndex) {
             this.cardsPositions.forEach((item, itemIndex) => {
                 if (itemIndex < index) {
-                    const newPos = item.position - ((itemIndex - this.activeIndex) * this.cardWidth + (itemIndex - this.activeIndex) * this.margin);
-                    console.log('New position', newPos, index - this.activeIndex);
+                    const indexDifference = itemIndex - this.activeIndex;
+                    const newPos = item.position - (indexDifference * this.cardWidth + indexDifference * this.margin);
+                    console.log(`New position for card ${itemIndex}`, {
+                        newPos,
+                        details: {
+                            position: item.position,
+                            indexDifference: itemIndex - this.activeIndex,
+                            itemIndex,
+                            activeIndex: this.activeIndex,
+                            indexDifference
+                        }
+                    });
                     gsap.to(item.card, {
                         duration: 0.4,
                         autoAlpha: 0,
                         scale: 0,
                         x: newPos,
                         onComplete: () => {
-                            (item.position = newPos), (item.opacity = 0), (item.scale = 0);
+                            item.position = newPos;
+                            item.opacity = 0;
+                            item.scale = 0;
                         }
                     });
                 } else if (itemIndex === index) {
                     const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
-                    console.log('New active card position', newPos, index - this.activeIndex);
+                    console.log(`New position for card ${itemIndex}`, newPos);
                     gsap.to(item.card, {
                         duration: 0.4,
                         autoAlpha: 1,
                         scale: 1,
                         x: newPos,
                         onComplete: () => {
-                            (item.position = newPos), (item.opacity = 1), (item.scale = 1);
+                            item.position = newPos;
+                            item.opacity = 1;
+                            item.scale = 1;
                         }
                     });
                 } else {
                     const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
-                    console.log('New active card position', newPos, index - this.activeIndex);
+                    console.log(`New position for card ${itemIndex}`, newPos);
                     gsap.to(item.card, {
                         duration: 0.4,
                         autoAlpha: 1,
                         scale: 1,
                         x: newPos,
                         onComplete: () => {
-                            (item.position = newPos), (item.opacity = 1), (item.scale = 1);
+                            item.position = newPos;
+                            item.opacity = 1;
+                            item.scale = 1;
                         }
                     });
+                }
+            });
+
+          
+        } else {
+            this.cardsPositions.forEach((item, itemIndex) => {
+                if (itemIndex < index) {
+                    const newPos = item.position;
+                    console.log(`New position for card ${itemIndex}`, newPos);
+                    gsap.to(item.card, {
+                        duration: 0.4,
+                        autoAlpha: 0,
+                        scale: 0,
+                        x: newPos,
+                        onComplete: () => {
+                            item.position = newPos;
+                            item.opacity = 0;
+                            item.scale = 0;
+                        }
+                    });
+                } else if (itemIndex === index) {
+                    const newPos = item.position;
+                    console.log(`New position for card ${itemIndex}`, newPos);
+                    gsap.to(item.card, {
+                        duration: 0.4,
+                        autoAlpha: 1,
+                        scale: 1,
+                        x: newPos,
+                        onComplete: () => {
+                            item.position = newPos;
+                            item.opacity = 1;
+                            item.scale = 1;
+                        }
+                    });
+                } else {
+                    if (itemIndex > index && itemIndex <= this.activeIndex) {
+                        const newPos = item.position + (itemIndex - index) * this.cardWidth + (itemIndex - index) * this.margin;
+                        console.log(`New position for card ${itemIndex}`, newPos);
+                        gsap.to(item.card, {
+                            duration: 0.4,
+                            autoAlpha: 1,
+                            scale: 1,
+                            x: newPos,
+                            onComplete: () => {
+                                item.position = newPos;
+                                item.opacity = 1;
+                                item.scale = 1;
+                            }
+                        });
+                    } else {
+                        const newPos = item.position + (this.activeIndex - index) * this.cardWidth + (this.activeIndex - index) * this.margin;
+                        console.log(`New position for card ${itemIndex}`, newPos);
+                        gsap.to(item.card, {
+                            duration: 0.4,
+                            autoAlpha: 1,
+                            scale: 1,
+                            x: newPos,
+                            onComplete: () => {
+                                item.position = newPos;
+                                item.opacity = 1;
+                                item.scale = 1;
+                            }
+                        });
+                    }
                 }
             });
         }
