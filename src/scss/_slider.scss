@@ -1,0 +1,54 @@
+.slider {
+    padding: 8rem 0;
+}
+
+
+.slider__cards {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+
+.slider__card {
+    width: 30rem;
+    margin-right: 2rem;
+    flex-shrink: 0;
+    position: relative;
+    background-color: rgb(76, 59, 231);
+    color: white;
+    font-size: 6rem;
+    line-height: 1.2;
+    font-weight: 500;
+
+    &:nth-child(1) {
+        background-color: rgb(76, 59, 231);
+    }
+    &:nth-child(2n) {
+        background-color: rgb(230, 51, 206);
+    }
+    &:nth-child(3n) {
+        background-color: rgb(49, 202, 118);
+    }
+   
+    &::after {
+        content: '';
+        display: block;
+        width: 100%;
+        padding-bottom: 120%;
+    }
+
+
+
+
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-app-region: no-drag;
+    touch-action: pan-y pinch-zoom;
+}
+
+.slider__card-number {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
