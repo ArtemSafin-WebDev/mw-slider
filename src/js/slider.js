@@ -108,9 +108,19 @@ class CardSlider {
                 }
             } else {
                 if (itemIndex < this.activeIndex) {
-                    gsap.set(item.card, {
-                        x: item.position
-                    });
+                    if (itemIndex === this.activeIndex - 1) {
+                        console.log('Offset', this.offset / this.cardWidth * 2);
+                        gsap.set(item.card, {
+                            x: item.position,
+                            autoAlpha: gsap.utils.interpolate(0, 1, Math.abs(this.offset / this.cardWidth * 2)),
+                            scale: gsap.utils.interpolate(0, 1, Math.abs(this.offset / this.cardWidth * 2))
+                        });
+                    } else {
+                        gsap.set(item.card, {
+                            x: item.position
+                        });
+                    }
+                  
                 } else if (itemIndex === this.activeIndex) {
                     gsap.set(item.card, {
                         x: item.position + this.offset
