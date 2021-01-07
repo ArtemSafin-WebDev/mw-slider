@@ -1,4 +1,5 @@
 import gsap from 'gsap';
+import { debounce } from 'lodash';
 
 class CardSlider {
     constructor(element) {
@@ -19,6 +20,8 @@ class CardSlider {
         this.activeIndex = 0;
         this.locked = false;
         this.clonedSlides = [];
+        this.filterClicks = false;
+        this.filterClicksDelay = 200;
 
         if (!this.cards.length) {
             console.warn('No cards present');
@@ -48,30 +51,44 @@ class CardSlider {
         }
         this.startX = event.pageX;
         this.pointerDown = true;
+    
 
         console.log('Drag started', {
             startValue: this.startX
         });
     };
 
+    preventPhantomClicks = event => {
+        if (event.target.matches('a') || event.target.closest('a')) {
+            if (this.filterClicks) {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('Click filtered', {
+                    target: event.target,
+                    filterClicks: this.filterClicks
+                })
+            }
+        }
+    };
+
+
+  
 
     cloneSlides = () => {
         const clonedCards = this.cards.map(card => card.cloneNode(true));
         this.cardsWrapper.append(...clonedCards);
         this.resetSlider();
-
-       
-    }
+    };
 
     resetSlider = () => {
-        const currentIndex = this.activeIndex;
+        const savedIndex = this.activeIndex;
         this.cards = Array.from(this.rootElement.querySelectorAll('.slider__card'));
         this.cards.forEach(card => {
             gsap.killTweensOf(card);
             gsap.set(card, {
-                clearProps:"all"
-            })
-        })
+                clearProps: 'all'
+            });
+        });
         this.cardsPositions = this.cards.map(card => ({
             card,
             position: 0,
@@ -85,8 +102,10 @@ class CardSlider {
 
         this.activeIndex = 0;
 
-        this.setActiveSlide(currentIndex, true)
-    }
+        if (this.activeIndex !== savedIndex) {
+            this.setActiveSlide(savedIndex, true);
+        }
+    };
 
     translateSlides = () => {
         this.cardsPositions.forEach((item, itemIndex) => {
@@ -109,18 +128,16 @@ class CardSlider {
             } else {
                 if (itemIndex < this.activeIndex) {
                     if (itemIndex === this.activeIndex - 1) {
-                        console.log('Offset', this.offset / this.cardWidth * 2);
                         gsap.set(item.card, {
                             x: item.position,
-                            autoAlpha: gsap.utils.interpolate(0, 1, Math.abs(this.offset / this.cardWidth * 2)),
-                            scale: gsap.utils.interpolate(0, 1, Math.abs(this.offset / this.cardWidth * 2))
+                            autoAlpha: gsap.utils.interpolate(0, 1, Math.abs((this.offset / this.cardWidth) * 2.2)),
+                            scale: gsap.utils.interpolate(0, 1, Math.abs((this.offset / this.cardWidth) * 2.2))
                         });
                     } else {
                         gsap.set(item.card, {
                             x: item.position
                         });
                     }
-                  
                 } else if (itemIndex === this.activeIndex) {
                     gsap.set(item.card, {
                         x: item.position + this.offset
@@ -133,7 +150,6 @@ class CardSlider {
             }
         });
     };
-
 
     translateToOriginalPositions = () => {
         this.locked = true;
@@ -148,7 +164,7 @@ class CardSlider {
                 autoAlpha: item.opacity
             });
         });
-    }
+    };
 
     setActiveSlide = (index, force = false) => {
         if (index === this.activeIndex) {
@@ -295,7 +311,7 @@ class CardSlider {
         }
         this.pointerDown = false;
 
-        // Return to the original positions
+        
 
         if (this.thresholdReached) {
             if (this.direction === 'left' && this.cards[this.activeIndex + 1]) {
@@ -315,11 +331,25 @@ class CardSlider {
             eventType: event ? event.type : 'threshold reached'
         });
 
+        if (Math.abs(this.offset) > 10) {
+            this.filterClicks = true;
+            // console.log('Blocking clicks')
+            setTimeout(() => {
+                this.filterClicks = false;
+                // console.log('Allowing clicks')
+            }, 300)
+        } else {
+            // console.log('Clicks not blocked', this.offset)
+        }
+
         this.offset = 0;
         this.direction = '';
         this.startX = 0;
         this.moveX = 0;
         this.thresholdReached = false;
+
+        
+        
     };
 
     bindListeners = () => {
@@ -328,6 +358,16 @@ class CardSlider {
         this.cardsWrapper.addEventListener('pointerup', this.handleDragEnd);
         this.cardsWrapper.addEventListener('pointerleave', this.handleDragEnd);
         this.cardsWrapper.addEventListener('pointercancel', this.handleDragEnd);
+
+
+        this.cardsWrapper.addEventListener('click', this.preventPhantomClicks)
+
+        window.addEventListener(
+            'resize',
+            debounce(() => {
+                this.resetSlider();
+            }, 200)
+        );
     };
 }
 
