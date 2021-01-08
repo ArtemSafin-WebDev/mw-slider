@@ -92,6 +92,7 @@ class CardSlider {
     cloneSlides = () => {
         const clonedCards = this.cards.map(card => card.cloneNode(true));
         this.cardsWrapper.append(...clonedCards);
+        this.clonedSlides = clonedCards;
         this.resetSlider();
     };
 
@@ -124,6 +125,16 @@ class CardSlider {
 
         if (this.activeIndex !== savedIndex) {
             this.setActiveSlide(savedIndex, true);
+        }
+
+        if (this.clonedSlides.length) {
+            gsap.fromTo(this.clonedSlides, {
+                autoAlpha: 0,
+            }, {
+                autoAlpha: 1,
+                duration: 0.3,
+                stagger: 0.2
+            })
         }
     };
 
