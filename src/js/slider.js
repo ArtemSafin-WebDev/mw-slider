@@ -10,7 +10,8 @@ class CardSlider {
             card,
             position: 0,
             opacity: 1,
-            scale: 1
+            scale: 1,
+            width: card.offsetWidth
         }));
         this.startX = 0;
         this.moveX = 0;
@@ -22,13 +23,14 @@ class CardSlider {
         this.clonedSlides = [];
         this.filterClicks = false;
         this.filterClicksDelay = 200;
-
+        this.scaleMultiplier = 1.2;
         if (!this.cards.length) {
             console.warn('No cards present');
             return;
         }
 
         this.cardWidth = this.cards[0].offsetWidth;
+        this.cardLargeWidth = this.cardWidth * this.scaleMultiplier;
         this.threshold = this.cardWidth * 0.3;
         this.margin = parseInt(window.getComputedStyle(this.cards[0]).marginRight, 10);
         this.thresholdReached = false;
@@ -39,6 +41,9 @@ class CardSlider {
         console.log('Card width', this.cardWidth);
         console.log('Threshold', this.threshold);
         console.log('Margin', this.margin);
+
+
+        this.initializeSlider();
 
         this.bindListeners();
     }
@@ -72,7 +77,17 @@ class CardSlider {
     };
 
 
-  
+    initializeSlider = () => {
+        const currentCardPos = this.cardsPositions[this.activeIndex];
+
+        gsap.set(currentCardPos.card, {
+            width: this.cardLargeWidth
+        });
+
+        currentCardPos.width = this.cardLargeWidth;
+
+        console.log('Slider initialized', this.cardsPositions)
+    }
 
     cloneSlides = () => {
         const clonedCards = this.cards.map(card => card.cloneNode(true));
@@ -89,18 +104,23 @@ class CardSlider {
                 clearProps: 'all'
             });
         });
+
         this.cardsPositions = this.cards.map(card => ({
             card,
             position: 0,
             opacity: 1,
-            scale: 1
+            scale: 1,
+            width: 0
         }));
 
         this.cardWidth = this.cards[0].offsetWidth;
+        this.cardLargeWidth = this.cardWidth * this.scaleMultiplier;
         this.threshold = this.cardWidth * 0.3;
         this.margin = parseInt(window.getComputedStyle(this.cards[0]).marginRight, 10);
 
         this.activeIndex = 0;
+
+        this.initializeSlider();
 
         if (this.activeIndex !== savedIndex) {
             this.setActiveSlide(savedIndex, true);
@@ -159,6 +179,7 @@ class CardSlider {
         this.cardsPositions.forEach(item => {
             gsap.to(item.card, {
                 x: item.position,
+                width: item.width,
                 duration: 0.4,
                 scale: item.scale,
                 autoAlpha: item.opacity
@@ -190,46 +211,54 @@ class CardSlider {
                     if (itemIndex < this.activeIndex) {
                         item.opacity = 0;
                         item.scale = 0;
+                        item.width = this.cardLargeWidth;
                         gsap.to(item.card, {
                             duration: DURATION,
                             autoAlpha: 0,
                             scale: 0,
-                            x: item.position
+                            x: item.position,
+                            width: this.cardLargeWidth
                         });
                     } else {
                         const newPos =
-                            item.position - ((itemIndex - this.activeIndex) * this.cardWidth + (itemIndex - this.activeIndex) * this.margin);
+                            item.position - ((itemIndex - this.activeIndex) * this.cardLargeWidth + (itemIndex - this.activeIndex) * this.margin);
                         item.position = newPos;
                         item.opacity = 0;
                         item.scale = 0;
+                        item.width = this.cardLargeWidth;
                         gsap.to(item.card, {
                             duration: DURATION,
                             autoAlpha: 0,
                             scale: 0,
-                            x: newPos
+                            x: newPos,
+                            width: this.cardLargeWidth
                         });
                     }
                 } else if (itemIndex === index) {
-                    const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
+                    const newPos = item.position - ((index - this.activeIndex) * this.cardLargeWidth + (index - this.activeIndex) * this.margin);
                     item.position = newPos;
                     item.opacity = 1;
                     item.scale = 1;
+                    item.width = this.cardLargeWidth;
                     gsap.to(item.card, {
                         duration: DURATION,
                         autoAlpha: 1,
                         scale: 1,
-                        x: newPos
+                        x: newPos,
+                        width: this.cardLargeWidth
                     });
                 } else {
-                    const newPos = item.position - ((index - this.activeIndex) * this.cardWidth + (index - this.activeIndex) * this.margin);
+                    const newPos = item.position - ((index - this.activeIndex) * this.cardLargeWidth + (index - this.activeIndex) * this.margin);
                     item.position = newPos;
                     item.opacity = 1;
                     item.scale = 1;
+                    item.width = this.cardWidth;
                     gsap.to(item.card, {
                         duration: DURATION,
                         autoAlpha: 1,
                         scale: 1,
-                        x: newPos
+                        x: newPos,
+                        width: this.cardWidth
                     });
                 }
             });
@@ -238,44 +267,51 @@ class CardSlider {
                 if (itemIndex < index) {
                     item.opacity = 0;
                     item.scale = 0;
+                    item.width = this.cardLargeWidth;
                     gsap.to(item.card, {
                         duration: DURATION,
                         autoAlpha: 0,
                         scale: 0,
-                        x: item.position
+                        x: item.position,
+                        width: this.cardLargeWidth
                     });
                 } else if (itemIndex === index) {
                     item.opacity = 1;
                     item.scale = 1;
-
+                    item.width = this.cardLargeWidth;
                     gsap.to(item.card, {
                         duration: DURATION,
                         autoAlpha: 1,
                         scale: 1,
-                        x: item.position
+                        x: item.position,
+                        width: this.cardLargeWidth
                     });
                 } else {
                     if (itemIndex > index && itemIndex <= this.activeIndex) {
-                        const newPos = item.position + (itemIndex - index) * this.cardWidth + (itemIndex - index) * this.margin;
+                        const newPos = item.position + (itemIndex - index) * this.cardLargeWidth + (itemIndex - index) * this.margin;
                         item.position = newPos;
                         item.opacity = 1;
                         item.scale = 1;
+                        item.width = this.cardWidth;
                         gsap.to(item.card, {
                             duration: DURATION,
                             autoAlpha: 1,
                             scale: 1,
-                            x: newPos
+                            x: newPos,
+                            width: this.cardWidth
                         });
                     } else {
-                        const newPos = item.position + (this.activeIndex - index) * this.cardWidth + (this.activeIndex - index) * this.margin;
+                        const newPos = item.position + (this.activeIndex - index) * this.cardLargeWidth + (this.activeIndex - index) * this.margin;
                         item.position = newPos;
                         item.opacity = 1;
                         item.scale = 1;
+                        item.width = this.cardWidth;
                         gsap.to(item.card, {
                             duration: DURATION,
                             autoAlpha: 1,
                             scale: 1,
-                            x: newPos
+                            x: newPos,
+                            width: this.cardWidth
                         });
                     }
                 }
