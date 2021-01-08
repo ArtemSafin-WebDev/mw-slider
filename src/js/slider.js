@@ -4,8 +4,17 @@ import { debounce } from 'lodash';
 class CardSlider {
     constructor(element) {
         this.rootElement = element;
+        this.loop = true;
         this.cardsWrapper = element.querySelector('.slider__cards');
         this.cards = Array.from(element.querySelectorAll('.slider__card'));
+        this.originalCards = this.cards.map(card => card.cloneNode(true));
+
+        if (this.loop) {
+            const clonedCards = this.originalCards.map(card => card.cloneNode(true));
+            this.cardsWrapper.append(...clonedCards);
+            this.cards = Array.from(element.querySelectorAll('.slider__card'));
+        }
+
         this.cardsPositions = this.cards.map(card => ({
             card,
             position: 0,
@@ -34,6 +43,8 @@ class CardSlider {
         this.threshold = this.cardWidth * 0.3;
         this.margin = parseInt(window.getComputedStyle(this.cards[0]).marginRight, 10);
         this.thresholdReached = false;
+        this.cloneIndex = this.originalCards.length;
+        this.doneCloning = false;
 
         console.log('Cards wrapper', this.cardsWrapper);
         console.log('Cards', this.cards);
@@ -41,7 +52,6 @@ class CardSlider {
         console.log('Card width', this.cardWidth);
         console.log('Threshold', this.threshold);
         console.log('Margin', this.margin);
-
 
         this.initializeSlider();
 
@@ -56,7 +66,6 @@ class CardSlider {
         }
         this.startX = event.pageX;
         this.pointerDown = true;
-    
 
         console.log('Drag started', {
             startValue: this.startX
@@ -71,11 +80,10 @@ class CardSlider {
                 console.log('Click filtered', {
                     target: event.target,
                     filterClicks: this.filterClicks
-                })
+                });
             }
         }
     };
-
 
     initializeSlider = () => {
         const currentCardPos = this.cardsPositions[this.activeIndex];
@@ -86,14 +94,27 @@ class CardSlider {
 
         currentCardPos.width = this.cardLargeWidth;
 
-        console.log('Slider initialized', this.cardsPositions)
-    }
+        console.log('Slider initialized', this.cardsPositions);
+    };
 
-    cloneSlides = () => {
-        const clonedCards = this.cards.map(card => card.cloneNode(true));
+    cloneSlides = (removePrevSlides = false) => {
+        if (removePrevSlides) {
+            this.cards.forEach((card, cardIndex) => {
+                if (cardIndex < this.cloneIndex) {
+                    card.remove();
+                }
+            });
+
+            
+        }
+        const clonedCards = this.originalCards.map(card => card.cloneNode(true));
         this.cardsWrapper.append(...clonedCards);
         this.clonedSlides = clonedCards;
         this.resetSlider();
+
+        if (removePrevSlides) {
+            this.setActiveSlide(0, true)
+        }
     };
 
     resetSlider = () => {
@@ -128,13 +149,17 @@ class CardSlider {
         }
 
         if (this.clonedSlides.length) {
-            gsap.fromTo(this.clonedSlides, {
-                autoAlpha: 0,
-            }, {
-                autoAlpha: 1,
-                duration: 0.3,
-                stagger: 0.2
-            })
+            gsap.fromTo(
+                this.clonedSlides,
+                {
+                    autoAlpha: 0
+                },
+                {
+                    autoAlpha: 1,
+                    duration: 0.3,
+                    stagger: 0.2
+                }
+            );
         }
     };
 
@@ -214,6 +239,13 @@ class CardSlider {
         const DURATION = force ? 0 : 0.4;
         gsap.delayedCall(DURATION, () => {
             this.locked = false;
+
+            if (this.activeIndex === this.cloneIndex && !this.doneCloning) {
+                this.doneCloning = true;
+                this.cloneSlides(true);
+            } else {
+                this.doneCloning = false;
+            }
         });
 
         if (index > this.activeIndex) {
@@ -358,8 +390,6 @@ class CardSlider {
         }
         this.pointerDown = false;
 
-        
-
         if (this.thresholdReached) {
             if (this.direction === 'left' && this.cards[this.activeIndex + 1]) {
                 this.setActiveSlide(this.activeIndex + 1);
@@ -384,7 +414,7 @@ class CardSlider {
             setTimeout(() => {
                 this.filterClicks = false;
                 // console.log('Allowing clicks')
-            }, 300)
+            }, 300);
         } else {
             // console.log('Clicks not blocked', this.offset)
         }
@@ -394,9 +424,6 @@ class CardSlider {
         this.startX = 0;
         this.moveX = 0;
         this.thresholdReached = false;
-
-        
-        
     };
 
     bindListeners = () => {
@@ -406,8 +433,7 @@ class CardSlider {
         this.cardsWrapper.addEventListener('pointerleave', this.handleDragEnd);
         this.cardsWrapper.addEventListener('pointercancel', this.handleDragEnd);
 
-
-        this.cardsWrapper.addEventListener('click', this.preventPhantomClicks)
+        this.cardsWrapper.addEventListener('click', this.preventPhantomClicks);
 
         window.addEventListener(
             'resize',

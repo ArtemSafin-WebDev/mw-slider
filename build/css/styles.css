@@ -1222,7 +1222,7 @@ select:-webkit-autofill:focus {
     content: '';
     display: block;
     width: 100%;
-    padding-bottom: 120%; }
+    padding-bottom: 130%; }
 
 .slider__card-number {
   position: absolute;
