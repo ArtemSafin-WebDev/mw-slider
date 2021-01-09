@@ -33,6 +33,8 @@ class CardSlider {
         this.filterClicks = false;
         this.filterClicksDelay = 200;
         this.scaleMultiplier = 1.2;
+        this.movingByClick = false;
+        this.slideToClickedSlides = true;
         if (!this.cards.length) {
             console.warn('No cards present');
             return;
@@ -85,6 +87,23 @@ class CardSlider {
         }
     };
 
+    handleCardsClick = event => {
+        if (event.target.matches('.slider__card') || event.target.closest('.slider__card')) {
+            const card = event.target.matches('.slider__card') ? event.target : event.target.closest('.slider__card');
+
+            if (card.classList.contains('active')) return;
+            event.preventDefault();
+            console.log('Card', card, this.cards);
+            const cardIndex = this.cards.findIndex(element => element === card);
+
+            console.log('Clicked on card width index:', cardIndex);
+            if (this.filterClicks) return;
+
+            this.movingByClick = true;
+            this.setActiveSlide(cardIndex);
+        }
+    };
+
     initializeSlider = () => {
         const currentCardPos = this.cardsPositions[this.activeIndex];
 
@@ -93,6 +112,9 @@ class CardSlider {
         });
 
         currentCardPos.width = this.cardLargeWidth;
+
+        this.cards.forEach(card => card.classList.remove('active'));
+        this.cards[this.activeIndex].classList.add('active');
 
         console.log('Slider initialized', this.cardsPositions);
     };
@@ -104,8 +126,6 @@ class CardSlider {
                     card.remove();
                 }
             });
-
-            
         }
         const clonedCards = this.originalCards.map(card => card.cloneNode(true));
         this.cardsWrapper.append(...clonedCards);
@@ -113,7 +133,13 @@ class CardSlider {
         this.resetSlider();
 
         if (removePrevSlides) {
-            this.setActiveSlide(0, true)
+            if (this.movingByClick) {
+                console.log('Cloning and setting active index', this.activeIndex - this.originalCards.length);
+                this.setActiveSlide(this.activeIndex - this.originalCards.length, true);
+                this.movingByClick = false;
+            } else {
+                this.setActiveSlide(0, true);
+            }
         }
     };
 
@@ -236,12 +262,16 @@ class CardSlider {
 
         this.locked = true;
 
+        const prevIndex = this.activeIndex;
+
         const DURATION = force ? 0 : 0.4;
         gsap.delayedCall(DURATION, () => {
             this.locked = false;
 
             if (this.activeIndex === this.cloneIndex && !this.doneCloning) {
                 this.doneCloning = true;
+                this.cloneSlides(true);
+            } else if (this.movingByClick && prevIndex < this.cloneIndex && this.activeIndex >= this.cloneIndex) {
                 this.cloneSlides(true);
             } else {
                 this.doneCloning = false;
@@ -362,6 +392,9 @@ class CardSlider {
         }
 
         this.activeIndex = index;
+
+        this.cards.forEach(card => card.classList.remove('active'));
+        this.cards[this.activeIndex].classList.add('active');
     };
 
     handleDragMove = event => {
@@ -441,6 +474,10 @@ class CardSlider {
                 this.resetSlider();
             }, 200)
         );
+
+        if (this.slideToClickedSlides) {
+            this.cardsWrapper.addEventListener('click', this.handleCardsClick);
+        }
     };
 }
 
