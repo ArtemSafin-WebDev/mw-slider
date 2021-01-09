@@ -49,6 +49,11 @@
     -webkit-user-drag: none;
     -webkit-app-region: no-drag;
     touch-action: pan-x pinch-zoom;
+
+
+    @include breakpoint(mobile) {
+        width: 25rem;
+    }
 }
 
 .slider__card-number {
