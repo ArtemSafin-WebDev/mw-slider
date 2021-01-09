@@ -141,6 +141,25 @@ class CardSlider {
                 this.setActiveSlide(0, true);
             }
         }
+
+
+        if (this.clonedSlides.length) {
+            gsap.fromTo(
+                this.clonedSlides,
+                {
+                    autoAlpha: 0
+                },
+                {
+                    autoAlpha: 1,
+                    duration: 0.3,
+                    stagger: 0.2
+                }
+            );
+
+            this.clonedSlides = []
+        }
+
+      
     };
 
     resetSlider = () => {
@@ -174,19 +193,9 @@ class CardSlider {
             this.setActiveSlide(savedIndex, true);
         }
 
-        if (this.clonedSlides.length) {
-            gsap.fromTo(
-                this.clonedSlides,
-                {
-                    autoAlpha: 0
-                },
-                {
-                    autoAlpha: 1,
-                    duration: 0.3,
-                    stagger: 0.2
-                }
-            );
-        }
+
+        
+       
     };
 
     translateSlides = () => {
